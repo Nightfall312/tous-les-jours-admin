@@ -14,6 +14,6 @@ const router = express.Router();
 router.get("/", getProducts);
 router.post("/", protect, adminOnly, upload.array("images", 5), createProduct);
 router.put("/:id", protect, adminOnly, upload.array("images", 5), updateProduct);
-router.delete("/:id", deleteProduct);
+router.delete("/:id", protect, adminOnly, deleteProduct);
 
 module.exports = router;

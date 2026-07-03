@@ -53,13 +53,9 @@ const ProductModal = ({ product, categories, onClose, onSaved }) => {
       });
 
       if (isEdit) {
-        await api.put(`/products/${product._id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await api.put(`/products/${product._id}`, formData);
       } else {
-        await api.post("/products", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await api.post("/products", formData);
       }
 
       onSaved();

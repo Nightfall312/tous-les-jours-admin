@@ -22,9 +22,10 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("adminAuth");
-    setIsLoggedIn(false);
-  };
+  localStorage.removeItem("adminAuth");
+  localStorage.removeItem("token");
+  setIsLoggedIn(false);
+};
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;

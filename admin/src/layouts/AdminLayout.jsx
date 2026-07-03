@@ -38,10 +38,9 @@ const AdminLayout = () => {
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `mb-2 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                    isActive
-                      ? "bg-[#0b5a35] text-white shadow-sm"
-                      : "text-slate-600 hover:bg-green-50 hover:text-[#0b5a35]"
+                  `mb-2 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${isActive
+                    ? "bg-[#0b5a35] text-white shadow-sm"
+                    : "text-slate-600 hover:bg-green-50 hover:text-[#0b5a35]"
                   }`
                 }
               >
@@ -52,8 +51,13 @@ const AdminLayout = () => {
           })}
         </nav>
 
-        <button className="absolute bottom-6 left-6 flex items-center gap-3 text-sm text-slate-600 hover:text-[#0b5a35]">
-          <FiLogOut size={18} />
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("adminAuth");
+            window.location.href = "/login";
+          }}
+        >
           Гарах
         </button>
       </aside>

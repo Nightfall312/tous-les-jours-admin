@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import api from "../../api/axios";
+import api, { SERVER_URL } from "../../api/axios";
 import ProductModal from "../../components/products/ProductModal";
 
 const Products = () => {
@@ -152,7 +152,7 @@ const Products = () => {
                   <td className="px-6 py-5">
                     {product.images?.[0] ? (
                       <img
-                        src={`http://localhost:5000${product.images[0]}`}
+                        src={`${SERVER_URL}${product.images[0]}`}
                         alt={product.name}
                         className="h-14 w-14 rounded-2xl object-cover"
                       />

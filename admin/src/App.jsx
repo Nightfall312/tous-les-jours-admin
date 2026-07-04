@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import AdminLayout from "./layouts/AdminLayout";
-import Login from "./pages/Login";
 
+import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Categories from "./pages/admin/Categories";
@@ -12,20 +11,17 @@ import Reports from "./pages/admin/Report";
 import Settings from "./pages/admin/Settings";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("adminAuth") === "true"
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("token")));
 
   const handleLogin = () => {
-    localStorage.setItem("adminAuth", "true");
-    setIsLoggedIn(true);
+    setIsLoggedIn(Boolean(localStorage.getItem("token")));
   };
 
   const handleLogout = () => {
-  localStorage.removeItem("adminAuth");
-  localStorage.removeItem("token");
-  setIsLoggedIn(false);
-};
+    localStorage.removeItem("token");
+    localStorage.removeItem("adminAuth");
+    setIsLoggedIn(false);
+  };
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;

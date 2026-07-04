@@ -4,7 +4,6 @@ const fs = require("fs");
 
 const uploadPath = path.join(__dirname, "../uploads/products");
 
-// Create folder if it doesn't exist
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -25,27 +24,25 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (req, file, cb) => {
+function fileFilter(req, file, cb) {
   const allowedTypes = /jpg|jpeg|png|webp/;
-
-  const extname = allowedTypes.test(
+  const extName = allowedTypes.test(
     path.extname(file.originalname).toLowerCase()
   );
+  const mimeType = allowedTypes.test(file.mimetype);
 
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (extname && mimetype) {
+  if (extName && mimeType) {
     cb(null, true);
   } else {
-    cb(new Error("Only JPG, PNG and WEBP images are allowed."));
+    cb(new Error("Only JPG, JPEG, PNG, and WEBP images are allowed"));
   }
-};
+}
 
 const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
+    fileSize: 5 * 1024 * 1024,
   },
 });
 

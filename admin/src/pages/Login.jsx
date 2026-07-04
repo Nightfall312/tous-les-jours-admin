@@ -2,8 +2,8 @@ import { useState } from "react";
 import api from "../api/axios";
 
 const Login = ({ onLogin }) => {
-  const [email, setEmail] = useState("admin@tlj.mn");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {

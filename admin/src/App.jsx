@@ -7,8 +7,11 @@ import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Categories from "./pages/admin/Categories";
 import Orders from "./pages/admin/Orders";
+import Applications from "./pages/admin/Applications";
 import Reports from "./pages/admin/Report";
+
 import Settings from "./pages/admin/Settings";
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("token")));
@@ -36,6 +39,7 @@ function App() {
         <Route path="products" element={<Products />} />
         <Route path="categories" element={<Categories />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="applications" element={<Applications />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
       </Route>

@@ -11,6 +11,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const careerRoutes = require("./routes/careerRoutes");
 
 const { errorHandler } = require("./middleware/errorMiddleware");
 
@@ -32,7 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-
+app.use("/api/careers", careerRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/uploads",express.static(path.join(__dirname, "uploads")));
 

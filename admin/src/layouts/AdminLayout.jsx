@@ -21,7 +21,7 @@ const menuItems = [
   { name: "Тохиргоо", path: "/admin/settings", icon: FiSettings },
 ];
 
-const AdminLayout = () => {
+const AdminLayout = ({ onLogout }) => {
   return (
     <div className="min-h-screen bg-[#fbfcfb] text-slate-900">
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white">
@@ -52,12 +52,10 @@ const AdminLayout = () => {
         </nav>
 
         <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("adminAuth");
-            window.location.href = "/login";
-          }}
+          onClick={onLogout}
+          className="mt-auto flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50"
         >
+          <FiLogOut />
           Гарах
         </button>
       </aside>

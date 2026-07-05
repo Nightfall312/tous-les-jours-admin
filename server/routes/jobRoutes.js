@@ -1,20 +1,26 @@
 const express = require("express");
 const {
-  createApplication,
-  getApplications,
-  updateApplicationStatus,
-  deleteApplication,
-} = require("../controllers/careerController");
+  getJobs,
+  getActiveJobs,
+  createJob,
+  updateJob,
+  deleteJob,
+} = require("../controllers/jobController");
 
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.route("/").post(createApplication).get(protect, adminOnly, getApplications);
+router.get("/public", getActiveJobs);
+
+router
+  .route("/")
+  .get(protect, adminOnly, getJobs)
+  .post(protect, adminOnly, createJob);
 
 router
   .route("/:id")
-  .put(protect, adminOnly, updateApplicationStatus)
-  .delete(protect, adminOnly, deleteApplication);
+  .put(protect, adminOnly, updateJob)
+  .delete(protect, adminOnly, deleteJob);
 
 module.exports = router;

@@ -13,7 +13,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const careerRoutes = require("./routes/careerRoutes");
-
+const jobRoutes = require("./routes/jobRoutes");
 const { errorHandler } = require("./middleware/errorMiddleware");
 
 
@@ -31,13 +31,14 @@ app.get("/", (req, res) => {
   res.send("Tous Les Jours API is running");
 });
 
+
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/careers", careerRoutes);
+app.use("/api/jobs", jobRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/applications", careerRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/uploads",express.static(path.join(__dirname, "uploads")));
 

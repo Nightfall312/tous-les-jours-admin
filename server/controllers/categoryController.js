@@ -2,7 +2,7 @@ const Category = require("../models/Category");
 const asyncHandler = require("../utils/asyncHandler");
 
 const getCategories = asyncHandler(async (req, res) => {
-  const categories = await Category.find({ isActive: true }).sort("name");
+  const categories = await Category.find().sort("name");
   res.json(categories);
 });
 
@@ -41,7 +41,6 @@ const deleteCategory = asyncHandler(async (req, res) => {
     throw new Error("Category not found");
   }
 
-  category.isActive = false;
   await category.save();
 
   res.json({ message: "Category disabled" });

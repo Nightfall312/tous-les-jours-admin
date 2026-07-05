@@ -3,39 +3,42 @@ const Category = require("../models/Category");
 const Order = require("../models/Order");
 
 const getDashboardStats = async (req, res) => {
-  const products = await Product.find();
-  const categories = await Category.find();
-  const orders = await Order.find().sort({ createdAt: -1 });
-
-  const completedOrders = orders.filter((order) => order.status === "completed");
-  const newOrders = orders.filter((order) => order.status === "new");
-
-  const totalRevenue = completedOrders.reduce(
-    (sum, order) => sum + Number(order.totalPrice || 0),
-    0
-  );
-
-  const lowStockProducts = products.filter(
-    (product) => Number(product.stock || 0) > 0 && Number(product.stock || 0) <= 5
-  );
-
-  const outOfStockProducts = products.filter(
-    (product) => Number(product.stock || 0) <= 0
-  );
+  const [
+    totalProducts,
+    totalCategories,
+    totalOrders,
+    newOrders,
+    completedOrders,
+    lowStockProducts,
+    outOfStockProducts,
+    recentOrders,
+    revenueResult,
+  ] = await Promise.all([
+    Product.countDocuments(),
+    Category.countDocuments(),
+    Order.countDocuments(),
+    Order.countDocuments({ status: "new" }),
+    Order.countDocuments({ status: "completed" }),
+    Product.countDocuments({ stock: { $gt: 0, $lte: 5 } }),
+    Product.countDocuments({ stock: { $lte: 0 } }),
+    Order.find().sort({ createdAt: -1 }).limit(5),
+    Order.aggregate([
+      { $match: { status: "completed" } },
+      { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
+    ]),
+  ]);
 
   res.json({
-    totalProducts: products.length,
-    totalCategories: categories.length,
-    totalOrders: orders.length,
-    newOrders: newOrders.length,
-    completedOrders: completedOrders.length,
-    totalRevenue,
-    lowStockProducts: lowStockProducts.length,
-    outOfStockProducts: outOfStockProducts.length,
-    recentOrders: orders.slice(0, 5),
+    totalProducts,
+    totalCategories,
+    totalOrders,
+    newOrders,
+    completedOrders,
+    lowStockProducts,
+    outOfStockProducts,
+    totalRevenue: revenueResult[0]?.totalRevenue || 0,
+    recentOrders,
   });
 };
 
-module.exports = {
-  getDashboardStats,
-};
+module.exports = { getDashboardStats };

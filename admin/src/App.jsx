@@ -9,6 +9,7 @@ import Categories from "./pages/admin/Categories";
 import Orders from "./pages/admin/Orders";
 import Applications from "./pages/admin/Applications";
 import Reports from "./pages/admin/Report";
+import Jobs from "./pages/admin/Jobs";
 
 import Settings from "./pages/admin/Settings";
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="categories" element={<Categories />} />
         <Route path="orders" element={<Orders />} />
         <Route path="applications" element={<Applications />} />
+        <Route path="jobs" element={<Jobs />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
       </Route>

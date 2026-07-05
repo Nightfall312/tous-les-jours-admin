@@ -10,6 +10,7 @@ import {
   FiBell,
   FiSearch,
   FiFileText,
+  FiBriefcase,
 } from "react-icons/fi";
 import logo from "../assets/tlj-logo.png";
 
@@ -18,7 +19,8 @@ const menuItems = [
   { name: "Бүтээгдэхүүн", path: "/admin/products", icon: FiBox },
   { name: "Ангилал", path: "/admin/categories", icon: FiTag },
   { name: "Захиалга", path: "/admin/orders", icon: FiShoppingBag },
-  { name: "Ажлын зар", path: "/admin/applications", icon: FiFileText },
+  { name: "Ажлын байр", path: "/admin/jobs", icon: FiBriefcase },
+  { name: "Ажлын анкет", path: "/admin/applications", icon: FiFileText },
   { name: "Тайлан", path: "/admin/reports", icon: FiBarChart2 },
   { name: "Тохиргоо", path: "/admin/settings", icon: FiSettings },
 ];

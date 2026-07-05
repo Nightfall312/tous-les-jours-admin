@@ -77,6 +77,10 @@ const updateProduct = asyncHandler(async (req, res) => {
       req.body.isAvailable === "true";
   }
 
+  if (req.body.isFeatured !== undefined) {
+    product.isFeatured = req.body.isFeatured === true || req.body.isFeatured === "true";
+  }
+
   if (req.files && req.files.length > 0) {
     if (product.images && product.images.length > 0) {
       product.images.forEach((imagePath) => {

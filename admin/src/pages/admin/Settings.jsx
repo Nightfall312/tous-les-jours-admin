@@ -1,25 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
 
 const subtractOneHour = (time) => {
   const [hour, minute] = time.split(":").map(Number);
   const newHour = (hour - 1 + 24) % 24;
-
-  return `${String(newHour).padStart(2, "0")}:${String(minute).padStart(
-    2,
-    "0"
-  )}`;
+  return `${String(newHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 };
 
-const SaveButton = ({ onClick }) => (
-  <div className="mt-6 flex justify-end">
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-2xl bg-[#0b5a35] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#09492b]"
-    >
-      Өөрчлөлт хадгалах
-    </button>
-  </div>
+const SaveButton = ({ onClick, loading }) => (
+  <button
+    onClick={onClick}
+    disabled={loading}
+    className="rounded-xl bg-[#0b5a35] px-5 py-3 font-semibold text-white hover:bg-[#084728] disabled:opacity-60"
+  >
+    {loading ? "Хадгалж байна..." : "Өөрчлөлт хадгалах"}
+  </button>
 );
 
 const TimeSpinner = ({ label, value, onChange }) => {
@@ -54,52 +49,44 @@ const TimeSpinner = ({ label, value, onChange }) => {
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-slate-600">
-        {label}
-      </label>
+      <p className="mb-2 font-medium text-slate-700">{label}</p>
 
-      <div className="rounded-2xl border border-slate-300 bg-white px-5 py-4 shadow-sm">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <div className="flex w-fit items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+        <div className="flex flex-col items-center">
           <button
-            type="button"
             onClick={() => changeHour(1)}
             className="text-2xl font-bold text-slate-700 hover:text-[#0b5a35]"
           >
             ˄
           </button>
 
-          <div />
+          <span className="text-3xl font-bold text-slate-800">
+            {String(hour).padStart(2, "0")}
+          </span>
 
           <button
-            type="button"
+            onClick={() => changeHour(-1)}
+            className="text-2xl font-bold text-slate-700 hover:text-[#0b5a35]"
+          >
+            ˅
+          </button>
+        </div>
+
+        <span className="text-3xl font-bold text-slate-800">:</span>
+
+        <div className="flex flex-col items-center">
+          <button
             onClick={() => changeMinute(15)}
             className="text-2xl font-bold text-slate-700 hover:text-[#0b5a35]"
           >
             ˄
           </button>
 
-          <div className="text-center text-4xl font-bold tracking-widest text-slate-900">
-            {String(hour).padStart(2, "0")}
-          </div>
-
-          <div className="text-4xl font-bold text-slate-600">:</div>
-
-          <div className="text-center text-4xl font-bold tracking-widest text-slate-900">
+          <span className="text-3xl font-bold text-slate-800">
             {String(minute).padStart(2, "0")}
-          </div>
+          </span>
 
           <button
-            type="button"
-            onClick={() => changeHour(-1)}
-            className="text-2xl font-bold text-slate-700 hover:text-[#0b5a35]"
-          >
-            ˅
-          </button>
-
-          <div />
-
-          <button
-            type="button"
             onClick={() => changeMinute(-15)}
             className="text-2xl font-bold text-slate-700 hover:text-[#0b5a35]"
           >
@@ -130,6 +117,32 @@ const Settings = () => {
     confirmPassword: "",
   });
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data } = await api.get("/settings");
+
+      setSettings((prev) => ({
+        ...prev,
+        ...data,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Тохиргоо ачаалахад алдаа гарлаа.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (field, value) => {
     setSettings((prev) => ({
       ...prev,
@@ -137,8 +150,37 @@ const Settings = () => {
     }));
   };
 
-  const handleSave = () => {
-    alert("Backend дараа: тохиргоог database-д хадгална.");
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+
+      const { data } = await api.put("/settings", {
+        bakeryName: settings.bakeryName,
+        businessPhone: settings.businessPhone,
+        openingHours: settings.openingHours,
+        closingHours: settings.closingHours,
+        deliveryFee: Number(settings.deliveryFee),
+        enableDelivery: settings.enableDelivery,
+        deliveryStartTime: settings.deliveryStartTime,
+        deliveryEndTime: settings.deliveryEndTime,
+        deliveryDuration: Number(settings.deliveryDuration),
+        cookTime: Number(settings.cookTime),
+        facebook: settings.facebook,
+        instagram: settings.instagram,
+      });
+
+      setSettings((prev) => ({
+        ...prev,
+        ...data,
+      }));
+
+      alert("Тохиргоо database-д хадгалагдлаа.");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Тохиргоо хадгалахад алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePasswordChange = () => {
@@ -156,74 +198,82 @@ const Settings = () => {
       return;
     }
 
-    alert("Backend дараа: нууц үг солих API холбоно.");
+    alert("Нууц үг солих backend-ийг дараа холбоно.");
   };
 
+  if (loading) {
+    return <p className="text-slate-600">Тохиргоо ачааллаж байна...</p>;
+  }
+
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Тохиргоо</h1>
-        <p className="mt-1 text-sm text-slate-500">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">Тохиргоо</h1>
+        <p className="mt-1 text-slate-500">
           Бизнесийн мэдээлэл, хүргэлт болон админ тохиргоо
         </p>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-6">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Бэйкэригийн мэдээлэл</h2>
+      <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <h2 className="mb-5 text-xl font-bold text-slate-800">
+          Бэйкэригийн мэдээлэл
+        </h2>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Бэйкэригийн нэр
-              </label>
-              <input
-                value={settings.bakeryName}
-                onChange={(e) => handleChange("bakeryName", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Утасны дугаар
-              </label>
-              <input
-                value={settings.businessPhone}
-                onChange={(e) => handleChange("businessPhone", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-          </div>
-
-          <SaveButton onClick={handleSave} />
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Ажиллах цаг</h2>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <TimeSpinner
-              label="Нээх цаг"
-              value={settings.openingHours}
-              onChange={(value) => handleChange("openingHours", value)}
-            />
-
-            <TimeSpinner
-              label="Хаах цаг"
-              value={settings.closingHours}
-              onChange={(value) => handleChange("closingHours", value)}
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Бэйкэригийн нэр
+            </label>
+            <input
+              value={settings.bakeryName}
+              onChange={(e) => handleChange("bakeryName", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
             />
           </div>
-
-          <SaveButton onClick={handleSave} />
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Хүргэлтийн тохиргоо</h2>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-600">
+            <label className="mb-2 block font-medium text-slate-700">
+              Утасны дугаар
+            </label>
+            <input
+              value={settings.businessPhone}
+              onChange={(e) => handleChange("businessPhone", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+        </div>
+
+        <h2 className="mb-5 mt-8 text-xl font-bold text-slate-800">
+          Ажиллах цаг
+        </h2>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <TimeSpinner
+            label="Нээх цаг"
+            value={settings.openingHours}
+            onChange={(value) => handleChange("openingHours", value)}
+          />
+
+          <TimeSpinner
+            label="Хаах цаг"
+            value={settings.closingHours}
+            onChange={(value) => handleChange("closingHours", value)}
+          />
+        </div>
+
+        <div className="mt-6">
+          <SaveButton onClick={handleSave} loading={saving} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <h2 className="mb-5 text-xl font-bold text-slate-800">
+          Хүргэлтийн тохиргоо
+        </h2>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
               Хүргэлтийн төлбөр
             </label>
             <input
@@ -234,17 +284,13 @@ const Settings = () => {
             />
           </div>
 
-          <div className="mt-5 rounded-2xl border border-slate-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold">Хүргэлт идэвхтэй эсэх</p>
-                <p className="text-sm text-slate-500">
-                  Хэрэглэгч зөвхөн хүргэлтээр захиалга өгнө
-                </p>
-              </div>
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Хүргэлт идэвхтэй эсэх
+            </label>
 
+            <div className="flex items-center gap-3">
               <button
-                type="button"
                 onClick={() =>
                   handleChange("enableDelivery", !settings.enableDelivery)
                 }
@@ -252,173 +298,178 @@ const Settings = () => {
                   settings.enableDelivery ? "bg-[#0b5a35]" : "bg-slate-300"
                 }`}
               >
-                <span
-                  className={`block h-5 w-5 rounded-full bg-white transition ${
-                    settings.enableDelivery ? "translate-x-5" : "translate-x-0"
+                <div
+                  className={`h-5 w-5 rounded-full bg-white transition ${
+                    settings.enableDelivery ? "translate-x-5" : ""
                   }`}
                 />
               </button>
+
+              <span className="text-slate-600">
+                Хэрэглэгч зөвхөн хүргэлтээр захиалга өгнө
+              </span>
             </div>
           </div>
-
-          <SaveButton onClick={handleSave} />
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Хүргэлт ба гал тогооны цаг</h2>
+        <h2 className="mb-5 mt-8 text-xl font-bold text-slate-800">
+          Хүргэлт ба гал тогооны цаг
+        </h2>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <TimeSpinner
-              label="Хүргэлт эхлэх цаг"
-              value={settings.deliveryStartTime}
-              onChange={(value) => handleChange("deliveryStartTime", value)}
+        <div className="grid gap-6 md:grid-cols-2">
+          <TimeSpinner
+            label="Хүргэлт эхлэх цаг"
+            value={settings.deliveryStartTime}
+            onChange={(value) => handleChange("deliveryStartTime", value)}
+          />
+
+          <TimeSpinner
+            label="Хүргэлт дуусах цаг"
+            value={settings.deliveryEndTime}
+            onChange={(value) => handleChange("deliveryEndTime", value)}
+          />
+        </div>
+
+        <div className="mt-5 rounded-xl bg-slate-50 p-4">
+          <p className="text-sm font-medium text-slate-700">
+            Захиалга авах сүүлийн цаг
+          </p>
+          <p className="mt-1 text-2xl font-bold text-[#0b5a35]">
+            {subtractOneHour(settings.deliveryEndTime)}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Хүргэлт дуусах цагаас автоматаар 1 цагийн өмнө тооцогдоно.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Хүргэлтийн ойролцоо хугацаа /мин/
+            </label>
+            <input
+              type="number"
+              value={settings.deliveryDuration}
+              onChange={(e) =>
+                handleChange("deliveryDuration", e.target.value)
+              }
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
             />
+          </div>
 
-            <TimeSpinner
-              label="Хүргэлт дуусах цаг"
-              value={settings.deliveryEndTime}
-              onChange={(value) => handleChange("deliveryEndTime", value)}
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Бэлтгэх / савлах хугацаа /мин/
+            </label>
+            <input
+              type="number"
+              value={settings.cookTime}
+              onChange={(e) => handleChange("cookTime", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
             />
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Захиалга авах сүүлийн цаг
-              </label>
-
-              <div className="rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 font-semibold text-slate-700">
-                {subtractOneHour(settings.deliveryEndTime)}
-              </div>
-
-              <p className="mt-2 text-xs text-slate-500">
-                Хүргэлт дуусах цагаас автоматаар 1 цагийн өмнө тооцогдоно.
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Хүргэлтийн ойролцоо хугацаа /мин/
-              </label>
-              <input
-                type="number"
-                value={settings.deliveryDuration}
-                onChange={(e) =>
-                  handleChange("deliveryDuration", e.target.value)
-                }
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Бэлтгэх / савлах хугацаа /мин/
-              </label>
-              <input
-                type="number"
-                value={settings.cookTime}
-                onChange={(e) => handleChange("cookTime", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-2xl bg-green-50 p-4 text-sm text-green-700">
-            Хэрэглэгч <b>{settings.deliveryStartTime}</b> -{" "}
-            <b>{settings.deliveryEndTime}</b> цагийн хооронд хүргэлтийн цаг
-            сонгоно. Захиалгыг хамгийн орой{" "}
-            <b>{subtractOneHour(settings.deliveryEndTime)}</b> хүртэл авна. Гал
-            тогоо ойролцоогоор <b>{settings.cookTime} минут</b> бэлтгэх
-            шаардлагатай.
-          </div>
-
-          <SaveButton onClick={handleSave} />
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Сошиал холбоос</h2>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Facebook
-              </label>
-              <input
-                value={settings.facebook}
-                onChange={(e) => handleChange("facebook", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Instagram
-              </label>
-              <input
-                value={settings.instagram}
-                onChange={(e) => handleChange("instagram", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-          </div>
-
-          <SaveButton onClick={handleSave} />
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-5 text-lg font-bold">Нууц үг солих</h2>
-
-          <div className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Одоогийн нууц үг
-              </label>
-              <input
-                type="password"
-                value={settings.currentPassword}
-                onChange={(e) =>
-                  handleChange("currentPassword", e.target.value)
-                }
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Шинэ нууц үг
-              </label>
-              <input
-                type="password"
-                value={settings.newPassword}
-                onChange={(e) => handleChange("newPassword", e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-600">
-                Шинэ нууц үг давтах
-              </label>
-              <input
-                type="password"
-                value={settings.confirmPassword}
-                onChange={(e) =>
-                  handleChange("confirmPassword", e.target.value)
-                }
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
-              />
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={handlePasswordChange}
-                className="rounded-2xl bg-[#0b5a35] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#09492b]"
-              >
-                Нууц үг солих
-              </button>
-            </div>
           </div>
         </div>
-      </div>
+
+        <p className="mt-5 rounded-xl bg-green-50 p-4 text-sm text-[#0b5a35]">
+          Хэрэглэгч {settings.deliveryStartTime} - {settings.deliveryEndTime}{" "}
+          цагийн хооронд хүргэлтийн цаг сонгоно. Захиалгыг хамгийн орой{" "}
+          {subtractOneHour(settings.deliveryEndTime)} хүртэл авна. Гал тогоо
+          ойролцоогоор {settings.cookTime} минут бэлтгэх шаардлагатай.
+        </p>
+
+        <div className="mt-6">
+          <SaveButton onClick={handleSave} loading={saving} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <h2 className="mb-5 text-xl font-bold text-slate-800">
+          Сошиал холбоос
+        </h2>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Facebook
+            </label>
+            <input
+              value={settings.facebook}
+              onChange={(e) => handleChange("facebook", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Instagram
+            </label>
+            <input
+              value={settings.instagram}
+              onChange={(e) => handleChange("instagram", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <SaveButton onClick={handleSave} loading={saving} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <h2 className="mb-5 text-xl font-bold text-slate-800">
+          Нууц үг солих
+        </h2>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Одоогийн нууц үг
+            </label>
+            <input
+              type="password"
+              value={settings.currentPassword}
+              onChange={(e) =>
+                handleChange("currentPassword", e.target.value)
+              }
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Шинэ нууц үг
+            </label>
+            <input
+              type="password"
+              value={settings.newPassword}
+              onChange={(e) => handleChange("newPassword", e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block font-medium text-slate-700">
+              Шинэ нууц үг давтах
+            </label>
+            <input
+              type="password"
+              value={settings.confirmPassword}
+              onChange={(e) =>
+                handleChange("confirmPassword", e.target.value)
+              }
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0b5a35]"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handlePasswordChange}
+          className="mt-6 rounded-xl bg-slate-800 px-5 py-3 font-semibold text-white hover:bg-slate-900"
+        >
+          Нууц үг солих
+        </button>
+      </section>
     </div>
   );
 };

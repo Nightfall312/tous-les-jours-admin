@@ -2,19 +2,44 @@ const mongoose = require("mongoose");
 
 const jobSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    department: { type: String, default: "" },
-    location: { type: String, default: "Дархан" },
-    employmentType: {
+    title: {
       type: String,
-      enum: ["full-time", "part-time", "intern", "temporary"],
-      default: "full-time",
+      required: true,
+      trim: true,
     },
-    salary: { type: String, default: "" },
-    description: { type: String, required: true },
-    requirements: { type: String, default: "" },
-    benefits: { type: String, default: "" },
-    isActive: { type: Boolean, default: true },
+
+    location: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    type: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    salary: {
+      type: String,
+      trim: true,
+    },
+
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    requirements: {
+      type: String,
+      trim: true,
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

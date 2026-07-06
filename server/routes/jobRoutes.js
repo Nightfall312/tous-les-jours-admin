@@ -11,16 +11,13 @@ const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/public", getActiveJobs);
+// Public: website can show active job offers
+router.get("/active", getActiveJobs);
 
-router
-  .route("/")
-  .get(protect, adminOnly, getJobs)
-  .post(protect, adminOnly, createJob);
-
-router
-  .route("/:id")
-  .put(protect, adminOnly, updateJob)
-  .delete(protect, adminOnly, deleteJob);
+// Admin: manage all job offers
+router.get("/", protect, adminOnly, getJobs);
+router.post("/", protect, adminOnly, createJob);
+router.put("/:id", protect, adminOnly, updateJob);
+router.delete("/:id", protect, adminOnly, deleteJob);
 
 module.exports = router;

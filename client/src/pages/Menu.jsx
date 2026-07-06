@@ -105,7 +105,7 @@ const Menu = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#f8f3ea] px-4 py-20 text-center">
+            <div className="min-h-screen bg-[white] px-4 py-20 text-center">
                 <p className="text-lg font-medium text-slate-600">
                     Меню ачааллаж байна...
                 </p>
@@ -114,7 +114,7 @@ const Menu = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f8f3ea]">
+        <div className="min-h-screen bg-[white]">
             
 
             <section className="mx-auto max-w-7xl px-4 py-8">

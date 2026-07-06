@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import logoWhite from "../assets/logo-white.png";
 
 const Footer = () => {
   const [settings, setSettings] = useState({
-    bakeryName: "Tous Les Jours",
+    bakeryName: "Аркилект Трэйд ХХК",
     businessPhone: "",
     openingHours: "07:00",
     closingHours: "20:00",
@@ -26,12 +27,20 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="border-t border-[#e6dccb] bg-[#0b5a35] text-white">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-4">
+    <footer className="bg-[#0B5A35] text-white">
+
+      <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-4 gap-10 px-6 pt-10 pb-6">
+
+        {/* Logo */}
         <div>
-          <h2 className="text-2xl font-black">{settings.bakeryName}</h2>
-          <p className="mt-2 text-sm text-green-100">
-            Шинэхэн бэйкэри бүтээгдэхүүн хүргэлтээр.
+          <img
+            src={logoWhite}
+            alt="Tous Les Jours"
+            className="w-56 h-auto object-contain"
+          />
+
+          <p className="mt-5 max-w-xs text-sm leading-6 text-green-100">
+            Шинэхэн бэйкэри бүтээгдэхүүнийг хүргэлтээр захиалаарай.
           </p>
         </div>
 
@@ -73,7 +82,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="border-t border-white/10 py-4 text-center text-sm text-green-100">
+      <div className="mt-6 border-t border-white/10 pt-5 pb-3 text-center text-sm text-green-100">
         © {new Date().getFullYear()} {settings.bakeryName}. Бүх эрх хуулиар
         хамгаалагдсан.
       </div>

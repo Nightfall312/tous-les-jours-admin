@@ -4,7 +4,7 @@ const jobSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     department: { type: String, default: "" },
-    location: { type: String, default: "Улаанбаатар" },
+    location: { type: String, default: "Дархан" },
     employmentType: {
       type: String,
       enum: ["full-time", "part-time", "intern", "temporary"],

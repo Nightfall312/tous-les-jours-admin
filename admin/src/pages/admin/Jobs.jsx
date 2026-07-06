@@ -5,7 +5,7 @@ import api from "../../api/axios";
 const emptyForm = {
   title: "",
   department: "",
-  location: "Улаанбаатар",
+  location: "Дархан",
   employmentType: "full-time",
   salary: "",
   description: "",
@@ -47,7 +47,7 @@ const Jobs = () => {
     setForm({
       title: job.title || "",
       department: job.department || "",
-      location: job.location || "Улаанбаатар",
+      location: job.location || "Дархан",
       employmentType: job.employmentType || "full-time",
       salary: job.salary || "",
       description: job.description || "",

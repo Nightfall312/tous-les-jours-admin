@@ -915,6 +915,9 @@
     "/api/reports/export/pdf": {
       "get": {
         "description": "",
+        "produces": [
+          "application/pdf"
+        ],
         "parameters": [
           {
             "name": "authorization",
@@ -929,8 +932,8 @@
           "403": {
             "description": "Forbidden"
           },
-          "501": {
-            "description": "Not Implemented"
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }

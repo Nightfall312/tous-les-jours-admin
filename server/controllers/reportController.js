@@ -1,5 +1,6 @@
 const Order = require("../models/Order");
 const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
 
 const getReportSummary = async (req, res) => {
   const orders = await Order.find().sort({ createdAt: -1 });
@@ -68,10 +69,27 @@ const deleteReportOrders = async (req, res) => {
     deletedCount: result.deletedCount,
   });
 };
+
 const exportReportsPdf = async (req, res) => {
-  res.status(501).json({
-    message: "PDF export хараахан хийгдээгүй байна",
-  });
+  try {
+    const doc = new PDFDocument();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=reports.pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text("Tous Les Jours Report", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(12).text(`Generated: ${new Date().toLocaleString("mn-MN")}`);
+
+    doc.end();
+  } catch (error) {
+    res.status(500).json({
+      message: "PDF export хийхэд алдаа гарлаа",
+      error: error.message,
+    });
+  }
 };
 
 const exportReportsExcel = async (req, res) => {

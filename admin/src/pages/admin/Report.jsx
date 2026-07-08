@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import api from "../../api/axios";
 import {
   FiDownload,
   FiFileText,
@@ -7,7 +8,6 @@ import {
   FiAlertTriangle,
   FiX,
 } from "react-icons/fi";
-import api from "../../api/axios";
 
 const statusLabels = {
   new: "Шинэ",
@@ -28,13 +28,13 @@ const Reports = () => {
   const [deleteType, setDeleteType] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchOrders = async () => {
+  const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/orders");
-      setOrders(res.data);
+      const res = await api.get("/reports");
+      setOrders(res.data.orders || []);
     } catch (error) {
-      console.error("Failed to load report orders:", error);
+      console.error("Failed to load reports:", error);
       alert("Тайлангийн мэдээлэл ачааллахад алдаа гарлаа");
     } finally {
       setLoading(false);
@@ -42,8 +42,47 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchReports();
   }, []);
+
+  const downloadFile = (blobData, filename) => {
+    const url = window.URL.createObjectURL(new Blob([blobData]));
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      const res = await api.get("/reports/export/excel", {
+        responseType: "blob",
+      });
+
+      downloadFile(res.data, "tlj-report.xlsx");
+    } catch (error) {
+      console.error("Excel export failed:", error);
+      alert("Excel тайлан татахад алдаа гарлаа");
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const res = await api.get("/reports/export/pdf", {
+        responseType: "blob",
+      });
+
+      downloadFile(res.data, "tlj-report.pdf");
+    } catch (error) {
+      console.error("PDF export failed:", error);
+      alert("PDF тайлан татахад алдаа гарлаа");
+    }
+  };
 
   const completedOrders = orders.filter((order) => order.status === "completed");
   const cancelledOrders = orders.filter((order) => order.status === "cancelled");
@@ -86,7 +125,8 @@ const Reports = () => {
         }
 
         map[item.name].units += Number(item.qty || 0);
-        map[item.name].revenue += Number(item.qty || 0) * Number(item.price || 0);
+        map[item.name].revenue +=
+          Number(item.qty || 0) * Number(item.price || 0);
       });
     });
 
@@ -95,59 +135,16 @@ const Reports = () => {
       .slice(0, 5);
   }, [completedOrders]);
 
-  const handleDownloadCSV = () => {
-    const headers = [
-      "Order Number",
-      "Customer",
-      "Phone",
-      "Type",
-      "Status",
-      "Payment",
-      "Total",
-      "Date",
-    ];
-
-    const rows = orders.map((order) => [
-      order.orderNumber || order._id,
-      order.customerName,
-      order.phone,
-      typeLabels[order.orderType] || order.orderType,
-      statusLabels[order.status] || order.status,
-      order.paymentStatus,
-      order.totalPrice,
-      new Date(order.createdAt).toLocaleString(),
-    ]);
-
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${cell || ""}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob(["\uFEFF" + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `tlj-report-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDownloadPDF = () => {
-    window.print();
-  };
-
   const handleDeleteOrders = async () => {
     try {
-      await Promise.all(
-        selectedDeleteOrders.map((order) => api.delete(`/orders/${order._id}`))
-      );
+      await api.delete("/reports/orders", {
+        data: {
+          status: deleteType,
+        },
+      });
 
       setDeleteType(null);
-      fetchOrders();
+      fetchReports();
     } catch (error) {
       console.error("Failed to delete report orders:", error);
       alert("Захиалга устгахад алдаа гарлаа");
@@ -166,11 +163,11 @@ const Reports = () => {
 
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={handleDownloadCSV}
+            onClick={handleDownloadExcel}
             className="flex items-center gap-2 rounded-2xl bg-[#0b5a35] px-5 py-3 text-sm font-semibold text-white hover:bg-[#09492b]"
           >
             <FiDownload />
-            CSV татах
+            Excel татах
           </button>
 
           <button
@@ -178,7 +175,7 @@ const Reports = () => {
             className="flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
           >
             <FiFileText />
-            PDF хэвлэх
+            PDF татах
           </button>
 
           <button
@@ -209,7 +206,7 @@ const Reports = () => {
             <div className="flex gap-3">
               <FiAlertTriangle className="mt-0.5 shrink-0" />
               <p>
-                Эхлээд CSV/PDF тайлангаа татаж аваад дараа нь дууссан эсвэл
+                Эхлээд Excel/PDF тайлангаа татаж аваад дараа нь дууссан эсвэл
                 цуцлагдсан захиалгыг цэвэрлэнэ.
               </p>
             </div>
@@ -221,7 +218,9 @@ const Reports = () => {
               <h2 className="mt-3 text-2xl font-bold text-[#0b5a35]">
                 ₮{totalRevenue.toLocaleString()}
               </h2>
-              <p className="mt-2 text-xs text-slate-400">Зөвхөн дууссан захиалга</p>
+              <p className="mt-2 text-xs text-slate-400">
+                Зөвхөн дууссан захиалга
+              </p>
             </div>
 
             <div className="rounded-3xl bg-white p-6 shadow-sm">
@@ -285,7 +284,7 @@ const Reports = () => {
                       <td className="px-4 py-3 font-semibold">
                         {order.orderNumber || order._id}
                       </td>
-                      <td className="px-4 py-3">{order.customerName}</td>
+                      <td className="px-4 py-3">{order.customerName || "-"}</td>
                       <td className="px-4 py-3">
                         {typeLabels[order.orderType] || "-"}
                       </td>
@@ -293,7 +292,9 @@ const Reports = () => {
                         {statusLabels[order.status] || order.status}
                       </td>
                       <td className="px-4 py-3">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {order.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString()
+                          : "-"}
                       </td>
                       <td className="px-4 py-3">
                         ₮{Number(order.totalPrice || 0).toLocaleString()}

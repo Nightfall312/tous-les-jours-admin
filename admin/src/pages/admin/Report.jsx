@@ -25,14 +25,19 @@ const typeLabels = {
 
 const Reports = () => {
   const [orders, setOrders] = useState([]);
+  const [storage, setStorage] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/reports");
-      setOrders(res.data.orders || []);
+
+      const reportRes = await api.get("/reports");
+      setOrders(reportRes.data.orders || []);
+
+      const storageRes = await api.get("/storage");
+      setStorage(storageRes.data);
     } catch (error) {
       console.error("Failed to load reports:", error);
       alert("Тайлангийн мэдээлэл ачааллахад алдаа гарлаа");
@@ -86,7 +91,6 @@ const Reports = () => {
 
   const completedOrders = orders.filter((order) => order.status === "completed");
   const cancelledOrders = orders.filter((order) => order.status === "cancelled");
-
   const deliveryOrders = orders.filter((order) => order.orderType === "delivery");
   const pickupOrders = orders.filter((order) => order.orderType === "pickup");
 
@@ -117,11 +121,7 @@ const Reports = () => {
     completedOrders.forEach((order) => {
       order.items?.forEach((item) => {
         if (!map[item.name]) {
-          map[item.name] = {
-            name: item.name,
-            units: 0,
-            revenue: 0,
-          };
+          map[item.name] = { name: item.name, units: 0, revenue: 0 };
         }
 
         map[item.name].units += Number(item.qty || 0);
@@ -138,9 +138,7 @@ const Reports = () => {
   const handleDeleteOrders = async () => {
     try {
       await api.delete("/reports/orders", {
-        data: {
-          status: deleteType,
-        },
+        data: { status: deleteType },
       });
 
       setDeleteType(null);
@@ -211,6 +209,76 @@ const Reports = () => {
               </p>
             </div>
           </div>
+
+          {storage && (
+            <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-center gap-3">
+                <FiDatabase className="text-[#0b5a35]" />
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Database Storage
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    MongoDB болон uploads folder-ийн хэмжээ
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-4">
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">Storage Size</p>
+                  <h3 className="mt-2 text-xl font-bold text-[#0b5a35]">
+                    {storage.database?.storageSize?.formatted || "0 B"}
+                  </h3>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">Data Size</p>
+                  <h3 className="mt-2 text-xl font-bold text-slate-900">
+                    {storage.database?.dataSize?.formatted || "0 B"}
+                  </h3>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">Index Size</p>
+                  <h3 className="mt-2 text-xl font-bold text-slate-900">
+                    {storage.database?.indexSize?.formatted || "0 B"}
+                  </h3>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">Uploads</p>
+                  <h3 className="mt-2 text-xl font-bold text-slate-900">
+                    {storage.uploads?.size?.formatted || "0 B"}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-100 p-4">
+                <p className="text-sm text-slate-500">Total Used</p>
+
+                <h3 className="mt-1 text-2xl font-bold text-[#0b5a35]">
+                  {storage.totalUsed?.formatted || "0 B"} /{" "}
+                  {storage.limit?.maxStorage?.formatted || "512 MB"}
+                </h3>
+
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-[#0b5a35]"
+                    style={{
+                      width: `${Math.min(storage.limit?.usedPercent || 0, 100)}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  Ашигласан: {storage.limit?.usedPercent || 0}% · Database:{" "}
+                  {storage.database?.name || "-"} · Collections:{" "}
+                  {storage.collections?.length || 0}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="mb-8 grid gap-5 md:grid-cols-4">
             <div className="rounded-3xl bg-white p-6 shadow-sm">

@@ -12,4 +12,5 @@ const router = express.Router();
 router.get("/", protect, adminOnly, getSettings);
 router.put("/", protect, adminOnly, updateSettings);
 
+
 module.exports = router;

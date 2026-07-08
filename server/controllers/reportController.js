@@ -1,4 +1,5 @@
 const Order = require("../models/Order");
+const ExcelJS = require("exceljs");
 
 const getReportSummary = async (req, res) => {
   const orders = await Order.find().sort({ createdAt: -1 });
@@ -67,8 +68,59 @@ const deleteReportOrders = async (req, res) => {
     deletedCount: result.deletedCount,
   });
 };
+const exportReportsPdf = async (req, res) => {
+  res.status(501).json({
+    message: "PDF export хараахан хийгдээгүй байна",
+  });
+};
+
+const exportReportsExcel = async (req, res) => {
+  const orders = await Order.find({
+    status: { $in: ["completed", "cancelled"] },
+  }).sort({ createdAt: -1 });
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Reports");
+
+  worksheet.columns = [
+    { header: "Захиалгын ID", key: "_id", width: 30 },
+    { header: "Хэрэглэгч", key: "customerName", width: 20 },
+    { header: "Утас", key: "phone", width: 15 },
+    { header: "Төлөв", key: "status", width: 15 },
+    { header: "Нийт дүн", key: "totalPrice", width: 15 },
+    { header: "Огноо", key: "createdAt", width: 25 },
+  ];
+
+  orders.forEach((order) => {
+    worksheet.addRow({
+      _id: order._id.toString(),
+      customerName: order.customerName || "",
+      phone: order.phone || "",
+      status: order.status || "",
+      totalPrice: order.totalPrice || 0,
+      createdAt: order.createdAt
+        ? new Date(order.createdAt).toLocaleString("mn-MN")
+        : "",
+    });
+  });
+
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=reports.xlsx"
+  );
+
+  await workbook.xlsx.write(res);
+  res.end();
+};
 
 module.exports = {
   getReportSummary,
   deleteReportOrders,
+  exportReportsExcel,
+  exportReportsPdf,
 };

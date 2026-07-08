@@ -3,7 +3,7 @@ import MainLayout from "./layouts/MainLayout";
 
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
-import ProductDetails from "./pages/ProductionDetails";
+import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Careers from "./pages/Careers";

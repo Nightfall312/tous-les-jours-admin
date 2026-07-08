@@ -3,6 +3,7 @@ const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 const {
   getProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -13,6 +14,7 @@ const upload = require("../middleware/uploadMiddleware");
 const router = express.Router();
 
 router.get("/", getProducts);
+router.get("/:id", getProductById);
 
 router.post("/", protect, adminOnly, upload.array("images", 5), createProduct);
 

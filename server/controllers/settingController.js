@@ -40,9 +40,11 @@ const updateSettings = async (req, res) => {
       "instagram",
     ];
 
+    const body = req.body || {};
+
     allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        settings[field] = req.body[field];
+      if (body[field] !== undefined) {
+        settings[field] = body[field];
       }
     });
 

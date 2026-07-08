@@ -15,6 +15,7 @@ const reportRoutes = require("./routes/reportRoutes");
 const careerRoutes = require("./routes/careerRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const settingRoutes = require("./routes/settingRoutes");
+const storageRoutes = require("./routes/storageRoutes");
 
 const { errorHandler } = require("./middleware/errorMiddleware");
 
@@ -43,6 +44,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingRoutes);
+app.use("/api/storage", storageRoutes);
 app.use("/uploads",express.static(path.join(__dirname, "uploads")));
 
 

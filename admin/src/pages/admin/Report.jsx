@@ -210,75 +210,184 @@ const Reports = () => {
             </div>
           </div>
 
-          {storage && (
-            <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
-              <div className="mb-5 flex items-center gap-3">
-                <FiDatabase className="text-[#0b5a35]" />
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    Database Storage
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    MongoDB болон uploads folder-ийн хэмжээ
-                  </p>
-                </div>
-              </div>
+          {storage && (() => {
+            const usedPercent = storage.limit?.usedPercent || 0;
 
-              <div className="grid gap-5 md:grid-cols-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Storage Size</p>
-                  <h3 className="mt-2 text-xl font-bold text-[#0b5a35]">
-                    {storage.database?.storageSize?.formatted || "0 B"}
-                  </h3>
-                </div>
+            const largestCollection =
+              storage.collections?.length > 0 ? storage.collections[0] : null;
 
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Data Size</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">
-                    {storage.database?.dataSize?.formatted || "0 B"}
-                  </h3>
-                </div>
+            const totalDocuments =
+              storage.collections?.reduce((sum, item) => sum + Number(item.count || 0), 0) || 0;
 
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Index Size</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">
-                    {storage.database?.indexSize?.formatted || "0 B"}
-                  </h3>
-                </div>
+            const health =
+              usedPercent >= 95
+                ? {
+                  label: "Critical",
+                  message: "Storage бараг дүүрсэн байна. Хуучин тайлангаа архивлана уу.",
+                  className: "bg-red-50 text-red-700 border-red-200",
+                }
+                : usedPercent >= 80
+                  ? {
+                    label: "Warning",
+                    message: "Storage өндөр ашиглагдаж байна.",
+                    className: "bg-amber-50 text-amber-700 border-amber-200",
+                  }
+                  : {
+                    label: "Healthy",
+                    message: "Storage хэвийн байна.",
+                    className: "bg-green-50 text-green-700 border-green-200",
+                  };
 
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Uploads</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">
-                    {storage.uploads?.size?.formatted || "0 B"}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-slate-100 p-4">
-                <p className="text-sm text-slate-500">Total Used</p>
-
-                <h3 className="mt-1 text-2xl font-bold text-[#0b5a35]">
-                  {storage.totalUsed?.formatted || "0 B"} /{" "}
-                  {storage.limit?.maxStorage?.formatted || "512 MB"}
-                </h3>
-
-                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-[#0b5a35]"
-                    style={{
-                      width: `${Math.min(storage.limit?.usedPercent || 0, 100)}%`,
-                    }}
-                  />
+            return (
+              <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center gap-3">
+                  <FiDatabase className="text-[#0b5a35]" />
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Database Storage
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      MongoDB болон uploads folder-ийн хэмжээ
+                    </p>
+                  </div>
                 </div>
 
-                <p className="mt-2 text-xs text-slate-400">
-                  Ашигласан: {storage.limit?.usedPercent || 0}% · Database:{" "}
-                  {storage.database?.name || "-"} · Collections:{" "}
-                  {storage.collections?.length || 0}
+                <div className="grid gap-5 md:grid-cols-4">
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Total Used</p>
+                    <h3 className="mt-2 text-xl font-bold text-[#0b5a35]">
+                      {storage.totalUsed?.formatted || "0 B"}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-400">
+                      / {storage.limit?.maxStorage?.formatted || "512 MB"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Storage Size</p>
+                    <h3 className="mt-2 text-xl font-bold text-slate-900">
+                      {storage.database?.storageSize?.formatted || "0 B"}
+                    </h3>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Indexes</p>
+                    <h3 className="mt-2 text-xl font-bold text-slate-900">
+                      {storage.database?.indexSize?.formatted || "0 B"}
+                    </h3>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Uploads</p>
+                    <h3 className="mt-2 text-xl font-bold text-slate-900">
+                      {storage.uploads?.size?.formatted || "0 B"}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-slate-700">
+                      {usedPercent}% used
+                    </span>
+                    <span className="text-slate-400">
+                      {storage.totalUsed?.formatted || "0 B"} /{" "}
+                      {storage.limit?.maxStorage?.formatted || "512 MB"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-[#0b5a35]"
+                      style={{ width: `${Math.min(usedPercent, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className={`mt-5 rounded-2xl border p-4 ${health.className}`}>
+                  <p className="font-bold">Storage {health.label}</p>
+                  <p className="mt-1 text-sm">{health.message}</p>
+                </div>
+
+                <div className="mt-5 grid gap-5 md:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-100 p-4">
+                    <p className="text-sm text-slate-500">Database</p>
+                    <h3 className="mt-1 font-bold text-slate-900">
+                      {storage.database?.name || "-"}
+                    </h3>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 p-4">
+                    <p className="text-sm text-slate-500">Collections</p>
+                    <h3 className="mt-1 font-bold text-slate-900">
+                      {storage.collections?.length || 0}
+                    </h3>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 p-4">
+                    <p className="text-sm text-slate-500">Documents</p>
+                    <h3 className="mt-1 font-bold text-slate-900">
+                      {totalDocuments}
+                    </h3>
+                  </div>
+                </div>
+
+                {largestCollection && (
+                  <div className="mt-5 rounded-2xl border border-slate-100 p-4">
+                    <p className="text-sm text-slate-500">Largest Collection</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">
+                          {largestCollection.name}
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          {largestCollection.count} documents
+                        </p>
+                      </div>
+
+                      <p className="font-bold text-[#0b5a35]">
+                        {largestCollection.storageSize?.formatted || "0 B"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-100">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3">Collection</th>
+                        <th className="px-4 py-3">Documents</th>
+                        <th className="px-4 py-3">Data Size</th>
+                        <th className="px-4 py-3">Storage</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="divide-y divide-slate-100">
+                      {storage.collections?.map((collection) => (
+                        <tr key={collection.name}>
+                          <td className="px-4 py-3 font-semibold text-slate-900">
+                            {collection.name}
+                          </td>
+                          <td className="px-4 py-3">{collection.count}</td>
+                          <td className="px-4 py-3">
+                            {collection.dataSize?.formatted || "0 B"}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-[#0b5a35]">
+                            {collection.storageSize?.formatted || "0 B"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="mt-4 text-xs text-slate-400">
+                  Last updated: {new Date().toLocaleString()}
                 </p>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           <div className="mb-8 grid gap-5 md:grid-cols-4">
             <div className="rounded-3xl bg-white p-6 shadow-sm">
